@@ -1,7 +1,7 @@
 logic-jitter
 ============
 
-Simple python script to visualize the jitter between two signal from the Saleae logic analyzer.
+Simple python script to visualize the jitter between two signals from the Saleae logic analyzer.
 
 This script is a PoC and wasn't meant to be generic.
 
