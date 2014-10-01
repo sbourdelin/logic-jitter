@@ -14,9 +14,8 @@ def draw(file_csv, interrupt, gpio):
     dic             = []
     min_value       = 10
     max_value       = 0
-    STEP_INIT       = 0
-    STEP_INTERRUPT  = 1
-    STEP_GPIO       = 2
+    STEP_INTERRUPT  = 0
+    STEP_GPIO       = 1
 
     with open(file_csv, 'r') as csvfile:
         cvsreader = csv.reader(csvfile, delimiter=',')
@@ -25,40 +24,38 @@ def draw(file_csv, interrupt, gpio):
         init_state      = next(cvsreader)
         interrupt_state = init_state[interrupt]
         gpio_state      = init_state[gpio]
-        step            = STEP_INIT
+        step            = STEP_INTERRUPT
         
         for row in cvsreader:
 
             # The first step is to find an interrupt edge
-            if step == STEP_INIT:
+            if step == STEP_INTERRUPT:
                 if (interrupt_state == 0 and int(row[interrupt]) == 1):
                     interrupt_value = float(row[0])
-                    step = STEP_INTERRUPT
-
-            # The second step is to find a gpio commutation
-            elif step == STEP_INTERRUPT:
-                if (gpio_state != int(row[gpio])):
-                    gpio_value = float(row[0])
                     step = STEP_GPIO
 
-            # here we know we have an interrupt edge value
-            # and the gpio commutation time
-            # we can take the delay mesure between the two
+            # The second step is to find a gpio commutation
             elif step == STEP_GPIO:
-                delay = gpio_value - interrupt_value
+                if (gpio_state != int(row[gpio])):
+                    gpio_value = float(row[0])
 
-                # store the delay value in millisecond.
-                dic.append((delay * 1000, 0.5))
+                    # here we know we have an interrupt edge value
+                    # and the gpio commutation time
+                    # we can take the delay mesure between the two
+                    delay = gpio_value - interrupt_value
 
-                # we want to keep in mind the min and max
-                # delay.
-                if delay < min_value:
-                    min_value = delay
-                if delay > max_value:
-                    max_value = delay
+                    # store the delay value in millisecond.
+                    dic.append((delay * 1000, 0.5))
 
-                # we can now reinit the step
-                step = STEP_INIT
+                    # we want to keep in mind the min and max
+                    # delay.
+                    if delay < min_value:
+                        min_value = delay
+                    if delay > max_value:
+                        max_value = delay
+
+                    # we can now reinit the step
+                    step = STEP_INTERRUPT
 
             interrupt_state = int(row[interrupt])
             gpio_state      = int(row[gpio])
